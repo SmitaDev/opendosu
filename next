@@ -1,0 +1,45 @@
+const right = new discord.MessageEmbed()
+      .setColor('#ff2f7d')
+      .setAuthor(`Play Command`)
+      .setThumbnail('https://i.giphy.com/media/Z4ITmGFsXV19C/200w.webp')
+      .setDescription(`<a:5845_tickgreen:755367931130675291> **${song.title}** has been added to the queue!`)
+
+    if (serverQueue) {
+      serverQueue.songs.push(song);
+      console.log(serverQueue.songs);
+      return message.channel.send(right);
+    }
+
+    const queueConstruct = {
+      textChannel: message.channel,
+      voiceChannel: channel,
+      connection: null,
+      songs: [],
+      volume: 2,
+      playing: true,
+    };
+    message.client.queue.set(message.guild.id, queueConstruct);
+    queueConstruct.songs.push(song);
+
+    const play = async (song) => {
+      const queue = message.client.queue.get(message.guild.id);
+      if (!song) {
+        queue.voiceChannel.leave();
+        message.client.queue.delete(message.guild.id);
+        return;
+      }
+      const rightg = new discord.MessageEmbed()
+      .setColor('#ff2f7d')
+      .setAuthor(`Play Command`)
+      .setThumbnail('https://i.giphy.com/media/Z4ITmGFsXV19C/200w.webp')
+      .setDescription(`<a:Music:755409091135799377> Started Playing : **${song.title}**`)
+      const dispatcher = queue.connection
+        .play(ytdl(song.url))
+        .on("finish", () => {
+          queue.songs.shift();
+          play(queue.songs[0]);
+        })
+        .on("error", (error) => console.error(error));
+      dispatcher.setVolumeLogarithmic(queue.volume / 5);
+      queue.textChannel.send(rightg);
+    };
